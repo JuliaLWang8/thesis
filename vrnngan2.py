@@ -262,7 +262,7 @@ class lagCallback(tf.keras.callbacks.Callback):
 
 
 class VRNNGRUGAN(tf.keras.Model):
-	def __init__(self, feature_space, z_dim, latent_dim, timesteps, lambda_gan, vrnn_model, **kwargs):
+	def __init__(self, feature_space, z_dim, latent_dim, timesteps, lambda_gan, **kwargs):
 		super(VRNNGRUGAN, self).__init__(**kwargs)
 		self.lambda_gan = lambda_gan
 		self.feature_space = feature_space
@@ -270,10 +270,16 @@ class VRNNGRUGAN(tf.keras.Model):
 		self.z_dim = z_dim
 		self.feature_space = feature_space
 		
+		# # vrnn_input = keras.layers.Input(shape=(timesteps, feature_space))
+		# # vrnn_output = keras.layers.RNN(self.vrnn_cell, return_sequences=True)(vrnn_input)
+		# self.vrnn = vrnn_model
+
+		# self.vrnn_cell = VRNNCell(latent_dim, z_dim, feature_space)
 		# vrnn_input = keras.layers.Input(shape=(timesteps, feature_space))
 		# vrnn_output = keras.layers.RNN(self.vrnn_cell, return_sequences=True)(vrnn_input)
-		self.vrnn = vrnn_model
-				
+		self.vrnn = VRNNGRU(feature_space, z_dim, latent_dim, timesteps)
+
+
 		disc_input = keras.layers.Input(shape=(timesteps, self.feature_space))
 		# disc_rnn = keras.layers.Bidirectional(keras.layers.GRU(32, return_sequences=True, recurrent_dropout=0.5, dropout=0.5, activity_regularizer='l2'), merge_mode='ave')(disc_input)
 		# # disc_rnn = keras.layers.Bidirectional(keras.layers.GRU(32, recurrent_dropout=0.5, dropout=0.5), merge_mode='sum')(disc_input)
@@ -333,7 +339,7 @@ class VRNNGRUGAN(tf.keras.Model):
 			inputs = input_data[:,0,:]
 			state = None
 			gen = []
-			for i in range(97):
+			for i in range(20):
 				# outputs and states should be batch_size, feature_size
 				sample, state = self.vrnn.vrnn_cell(inputs, state, inference=False)
 				gen.append(sample[6])
@@ -392,7 +398,7 @@ class VRNNGRUGAN(tf.keras.Model):
 
 			# gen can be the generated features or the sequence of latent codes
 
-			for i in range(97):
+			for i in range(20):
 				# outputs and states should be batch_size, feature_size
 				sample, state = self.vrnn.vrnn_cell(inputs, state, inference=False)
 				gen.append(sample[6])
